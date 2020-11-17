@@ -1,0 +1,74 @@
+#include <opencv2/opencv.hpp>
+#include <iostream>
+#include "main.h"
+using namespace cv;
+using namespace std;
+
+Mat input;
+Mat frame;
+
+void callbackImg(int id)
+{
+	if (id == INPUT)
+	{
+		input = imread(IMG_NAME, IMREAD_COLOR);
+		if (input.empty()) { cout << "영상 입력 오류\n "; exit(0); }
+		
+		frame = imread(FRAME_NAME, IMREAD_COLOR);
+		if (frame.empty()) { cout << "영상 입력 오류\n "; exit(0); }
+		imshow("frame", frame);
+
+		cout << "화면에 네 포인트를 선택하고 Excute 버튼을 클릭하세요.\n\n";
+		setMouseCallback("frame", onMouse, &frame);
+	}
+}
+
+void callbackVideo(int id)
+{
+	if (id == INPUT)
+	{
+		VideoCapture cap(MP4_NAME);	// 동영상 파일인 경우
+		if (!cap.isOpened())
+			cerr << "ERROR! Unable to open video\n";
+		
+		frame = imread(FRAME_NAME, IMREAD_COLOR);
+		if (frame.empty()) { cout << "영상 입력 오류\n "; exit(0); }
+		imshow("frame", frame);
+
+		cap >> input;	// 동영상에서 하나의 프레임을 추출한다. 
+		if (input.empty()) { cout << "영상 입력 오류\n "; exit(0); }
+
+		cout << "화면에 네 포인트를 선택하고 Excute 버튼을 클릭하세요.\n";
+		setMouseCallback("frame", onMouse, &frame);
+	
+		return;
+	}
+}
+
+void callbackCam(int id)
+{
+	if (id == INPUT)
+	{
+		VideoCapture cam;
+		cam.open(CAP_NAME);
+		if (!cam.isOpened()) {
+			cerr << "ERROR! Unable to open camera\n";
+			return;
+		}
+	
+		cam.read(input);
+		if (input.empty()) {
+			cerr << "ERROR! blank frame grabbed\n";
+			exit(0);
+		}
+
+		frame = imread(FRAME_NAME, IMREAD_COLOR);
+		if (frame.empty()) { cout << "영상 입력 오류\n "; exit(0); }
+		imshow("frame", frame);
+
+		cout << "화면에 네 포인트를 선택하고 Excute 버튼을 클릭하세요.\n";
+		setMouseCallback("frame", onMouse, &frame);
+
+		return;
+	}
+}
