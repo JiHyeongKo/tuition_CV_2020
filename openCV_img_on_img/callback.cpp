@@ -43,7 +43,7 @@ void callbackVideo(void)
 void callbackCam(void)
 {
 	VideoCapture cam;
-	cam.open(CAP_NAME);
+	cam.open(CAM_NAME);
 	if (!cam.isOpened()) {
 		cerr << "ERROR! Unable to open camera\n";
 		return;

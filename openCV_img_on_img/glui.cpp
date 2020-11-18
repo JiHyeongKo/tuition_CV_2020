@@ -114,7 +114,7 @@ void control_bt(int control)
 				printf("종료를 원하시면 아무 키보드 자판이나 누르고 QUIT을 클릭하세요.\n");
 				printf("다른 Input을 사용하고 싶으시면 아무 키보드 자판이나 누르고 다른 라디오 버튼을 클릭 후 시도하세요.\n\n");
 				VideoCapture cam;
-				cam.open(CAP_NAME);
+				cam.open(CAM_NAME);
 
 				while (1)
 				{
