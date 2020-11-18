@@ -39,11 +39,20 @@ void onMouse(int event, int x, int y, int flags, void* param)   // 마우스 이벤트
 
 void maskThreshold(Mat* mask, Mat* dst)
 {
-    Mat thr = Mat::zeros(mask->rows, mask->cols, CV_8U); // 마스크 복사 -> threshold로 사용
+    Mat thr = Mat::zeros(dst->rows, dst->cols, CV_8UC3); // 마스크 복사 -> threshold로 사용
     Mat img = *dst; // 바깥 프레임 영상
-    threshold(*mask, thr, 0, 255, THRESH_BINARY_INV);
-    bitwise_and(thr, img, img);
-    bitwise_or(img, *dst, *dst);
+    Mat maskBuffer = mask->clone();
+    Mat maskBuffer_inv = mask->clone();
+    Mat fg, bg;
+
+    cvtColor(maskBuffer, maskBuffer, COLOR_BGR2GRAY);   // 1채널
+    threshold(maskBuffer, maskBuffer_inv, 0, 255, THRESH_BINARY_INV);   // 1채널
+    threshold(maskBuffer_inv, maskBuffer, 0, 255, THRESH_BINARY_INV);   // 1채널
+    bitwise_and(img, img, bg, maskBuffer_inv);  // 3채널 저장
+    bitwise_and(*mask, *mask, fg, maskBuffer); // 3채널 저장
+
+    add(bg, fg, *dst);
+    
 }
 
 void warp(Mat* src, Mat* dst)

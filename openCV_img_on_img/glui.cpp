@@ -1,7 +1,12 @@
+#pragma warning(disable: 4996)
 #include <opencv2/opencv.hpp>
 #include <iostream>
 #include <GL/glui.h>
+#include <GL/glut.h>
+#include "OpenFileDialog.h"
+#include "SaveFileDialog.h"
 #include "main.h"
+
 using namespace cv;
 using namespace std;
 
@@ -11,19 +16,42 @@ extern Mat frame;
 extern int i;
 extern int* x_buffer;
 extern int* y_buffer;
+String FileName;
 GLUI_RadioGroup* inputGroup;
 GLUI_RadioGroup* frameGroup;
 void warp(Mat* src, Mat* dst);
+
+const std::string TCHARToString(const TCHAR* ptsz)
+{
+	int len = wcslen((wchar_t*)ptsz);
+
+	char* psz = new char[2 * len + 1];
+
+	wcstombs(psz, (wchar_t*)ptsz, 2 * len + 1);
+	std::string s = psz;
+
+	delete[] psz;
+
+	return s;
+}
 
 void control_rb(int control)
 {
 	if (control == INPUT)
 	{
+		if (inputGroup->get_int_val() != 2)	// 캠이 아닐 때
+		{
+			OpenFileDialog* openFileDialog = new OpenFileDialog();
+			if (openFileDialog->ShowDialog())
+				FileName = TCHARToString(openFileDialog->FileName);
+		}
+		initialize();	// 잘 못 눌렀을시..
+
 		switch (inputGroup->get_int_val())
 		{
-		case 0: callbackImg(control); break;
-		case 1: callbackVideo(control); break;
-		case 2: callbackCam(control); break;
+		case 0: callbackImg(); break;
+		case 1: callbackVideo(); break;
+		case 2: callbackCam(); break;
 		}
 	}
 }
@@ -34,7 +62,7 @@ void control_bt(int control)
 
 	case QUIT: exit(0);	break;
 
-	case EXCUTE:
+	case EXECUTE:
 	{
 		if (i != 4)
 		{
@@ -49,6 +77,8 @@ void control_bt(int control)
 			case 0:
 				printf("종료를 원하시면 QUIT을 클릭하세요.\n");
 				printf("다른 Input을 사용하고 싶으시면 다른 라디오 버튼을 클릭 후 시도하세요.\n\n");
+				input = imread(FileName, IMREAD_COLOR);
+				//imshow("input", input);
 				warp(&input, &frame);
 				imshow("frame", frame);
 
@@ -59,13 +89,14 @@ void control_bt(int control)
 			{
 				printf("종료를 원하시면 아무 키보드 자판이나 누르고 QUIT을 클릭하세요.\n");
 				printf("다른 Input을 사용하고 싶으시면 아무 키보드 자판이나 누르고 다른 라디오 버튼을 클릭 후 시도하세요.\n\n");
-				VideoCapture cap(MP4_NAME);
+				VideoCapture cap(FileName);
 
 				while (1)
 				{
 					frame = imread(FRAME_NAME, IMREAD_COLOR);
 					cap >> input;	// 동영상에서 하나의 프레임을 추출한다. 
-					imshow("input", input);
+
+					//imshow("input", input);
 					warp(&input, &frame);
 					imshow("frame", frame);
 
@@ -90,7 +121,7 @@ void control_bt(int control)
 					frame = imread(FRAME_NAME, IMREAD_COLOR);
 					cam.read(input);
 
-					imshow("input", input);
+					//imshow("input", input);
 					warp(&input, &frame);
 					imshow("frame", frame);
 
@@ -126,7 +157,7 @@ void go(void)
 	new GLUI_RadioButton(inputGroup, "Cam");
 
 	new GLUI_Button(inputGroup, "Read", INPUT, control_rb);
-	new GLUI_Button(inputGroup, "Excute", EXCUTE, control_bt);
+	new GLUI_Button(inputGroup, "Execute", EXECUTE, control_bt);
 	new GLUI_Button(inputGroup, "Quit", QUIT, control_bt);
 
 	glui->set_main_gfx_window(main_window);
