@@ -17,6 +17,7 @@ extern int i;
 extern int* x_buffer;
 extern int* y_buffer;
 String FileName;
+String frameName;
 GLUI_RadioGroup* inputGroup;
 GLUI_RadioGroup* frameGroup;
 void warp(Mat* src, Mat* dst);
@@ -39,7 +40,14 @@ void control_rb(int control)
 {
 	if (control == INPUT)
 	{
-		if (inputGroup->get_int_val() != 2)	// 캠이 아닐 때
+		if (inputGroup->get_int_val() == 0)	// frame
+		{
+			OpenFileDialog* openFileDialog = new OpenFileDialog();
+			if (openFileDialog->ShowDialog())
+				frameName = TCHARToString(openFileDialog->FileName);
+		}
+
+		else if (inputGroup->get_int_val() != 3)	// 캠이 아닐 때
 		{
 			OpenFileDialog* openFileDialog = new OpenFileDialog();
 			if (openFileDialog->ShowDialog())
@@ -49,9 +57,14 @@ void control_rb(int control)
 
 		switch (inputGroup->get_int_val())
 		{
-		case 0: callbackImg(); break;
-		case 1: callbackVideo(); break;
-		case 2: callbackCam(); break;
+		case 0:
+			frame = imread(frameName, IMREAD_COLOR);
+			if (frame.empty()) { cout << "배경 영상 입력 오류\n "; exit(0); }
+			imshow("frame", frame);
+			break;
+		case 1: callbackImg(); break;
+		case 2: callbackVideo(); break;
+		case 3: callbackCam(); break;
 		}
 	}
 }
@@ -74,7 +87,7 @@ void control_bt(int control)
 		{
 			switch (inputGroup->get_int_val())
 			{
-			case 0:
+			case 1:
 				printf("종료를 원하시면 QUIT을 클릭하세요.\n");
 				printf("다른 Input을 사용하고 싶으시면 다른 라디오 버튼을 클릭 후 시도하세요.\n\n");
 				input = imread(FileName, IMREAD_COLOR);
@@ -85,7 +98,7 @@ void control_bt(int control)
 				initialize();
 				break;
 
-			case 1:
+			case 2:
 			{
 				printf("종료를 원하시면 아무 키보드 자판이나 누르고 QUIT을 클릭하세요.\n");
 				printf("다른 Input을 사용하고 싶으시면 아무 키보드 자판이나 누르고 다른 라디오 버튼을 클릭 후 시도하세요.\n\n");
@@ -94,8 +107,11 @@ void control_bt(int control)
 				while (1)
 				{
 					frame = imread(FRAME_NAME, IMREAD_COLOR);
-					cap >> input;	// 동영상에서 하나의 프레임을 추출한다. 
-
+					if (!(cap.read(input)))
+					{
+						printf("영상이 종료됐습니다.\n");
+						break;	// 동영상에서 하나의 프레임을 추출한다. 
+					}
 					//imshow("input", input);
 					warp(&input, &frame);
 					imshow("frame", frame);
@@ -109,7 +125,7 @@ void control_bt(int control)
 				break;
 			}
 
-			case 2: 
+			case 3: 
 			{
 				printf("종료를 원하시면 아무 키보드 자판이나 누르고 QUIT을 클릭하세요.\n");
 				printf("다른 Input을 사용하고 싶으시면 아무 키보드 자판이나 누르고 다른 라디오 버튼을 클릭 후 시도하세요.\n\n");
@@ -151,6 +167,8 @@ void go(void)
 
 	GLUI_Panel* inputPanel = new GLUI_Panel(glui, "Input Image");
 	inputGroup = new GLUI_RadioGroup(inputPanel, &obj);
+
+	new GLUI_RadioButton(inputGroup, "Frame");
 
 	new GLUI_RadioButton(inputGroup, "Image");
 	new GLUI_RadioButton(inputGroup, "Video");
