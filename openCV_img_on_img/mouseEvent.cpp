@@ -7,6 +7,7 @@ using namespace std;
 int x_buffer[4];
 int y_buffer[4];
 int i = 0;
+extern String frameName;
 
 void initialize(void)
 {
@@ -26,12 +27,13 @@ void onMouse(int event, int x, int y, int flags, void* param)   // 마우스 이벤트
             x_buffer[i] = x;
             y_buffer[i] = y;
             i++;
+            if (img.empty()) { cout << "img 영상 입력 오류\n "; exit(0); }
             imshow("frame", img);
         }
 
         if (i == 4) // 다하면 다시 불러와서 circle 삭제
         {
-            img = imread("frame.jpg", IMREAD_COLOR);
+            img = imread(frameName, IMREAD_COLOR);
         }
 
     }

@@ -7,15 +7,16 @@ using namespace std;
 Mat input;
 Mat frame;
 extern String FileName;
+extern String frameName;
 
 void callbackImg(void)
 {
+	frame = imread(frameName, IMREAD_COLOR);
+	if (frame.empty()) { cout << "배경 영상 입력 오류\n "; exit(0); }
+	imshow("frame", frame);
+
 	input = imread(FileName, IMREAD_COLOR);
 	if (input.empty()) { cout << "영상 입력 오류\n "; exit(0); }
-		
-	frame = imread("frame.jpg", IMREAD_COLOR);
-	if (frame.empty()) { cout << "영상 입력 오류\n "; exit(0); }
-	imshow("frame", frame);
 
 	cout << "화면에 네 포인트를 선택하고 Excute 버튼을 클릭하세요.\n\n";
 	setMouseCallback("frame", onMouse, &frame);
@@ -27,11 +28,11 @@ void callbackVideo(void)
 	if (!cap.isOpened())
 		cerr << "ERROR! Unable to open video\n";
 		
-	frame = imread(FRAME_NAME, IMREAD_COLOR);
-	if (frame.empty()) { cout << "영상 입력 오류\n "; exit(0); }
+	frame = imread(frameName, IMREAD_COLOR);
+	if (frame.empty()) { cout << "배경 영상 입력 오류\n "; exit(0); }
 	imshow("frame", frame);
 
-	cap >> input;	// 동영상에서 하나의 프레임을 추출한다. 
+	cap.read(input);	// 동영상에서 하나의 프레임을 추출한다. 
 	if (input.empty()) { cout << "영상 입력 오류\n "; exit(0); }
 
 	cout << "화면에 네 포인트를 선택하고 Excute 버튼을 클릭하세요.\n";
@@ -55,8 +56,8 @@ void callbackCam(void)
 		exit(0);
 	}
 
-	frame = imread(FRAME_NAME, IMREAD_COLOR);
-	if (frame.empty()) { cout << "영상 입력 오류\n "; exit(0); }
+	frame = imread(frameName, IMREAD_COLOR);
+	if (frame.empty()) { cout << "배경 영상 입력 오류\n "; exit(0); }
 	imshow("frame", frame);
 
 	cout << "화면에 네 포인트를 선택하고 Excute 버튼을 클릭하세요.\n";
